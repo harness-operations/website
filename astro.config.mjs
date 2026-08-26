@@ -20,9 +20,9 @@ export default defineConfig({
           items: [
             { slug: 'overview' },
             { slug: 'principles' },
-            { slug: 'reference-model' },
+            { slug: 'model' },
             { slug: 'governance' },
-            { slug: 'standards-landscape' },
+            { slug: 'landscape' },
           ],
         },
         {
