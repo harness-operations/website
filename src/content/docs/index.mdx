@@ -1,0 +1,91 @@
+---
+title: Harness Operations
+description: The open discipline and reference model for operating agent harnesses at scale.
+template: splash
+hero:
+  title: Harness Operations
+  tagline: Harness engineering makes agents effective. Harness Operations enables them to work at scale.
+  actions:
+    - text: Read the Overview
+      link: /overview/
+      icon: right-arrow
+    - text: Reference Model 0.1
+      link: https://github.com/harness-operations/specification/releases/tag/v0.1
+      icon: external
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<p className="ho-version">Reference Model 0.1 · Published August 26, 2026</p>
+
+<p className="ho-intro">
+  An open, harness-centric reference model for operating heterogeneous agent harnesses across lifecycles, environments, authority, governance, and evidence without flattening their native semantics.
+</p>
+
+## Start with the reference model
+
+<CardGrid>
+  <LinkCard
+    title="Overview"
+    href="/overview/"
+    description="Why Harness Operations exists, where the operational problem begins, and what belongs in scope."
+  />
+  <LinkCard
+    title="Principles"
+    href="/principles/"
+    description="The design principles for operating heterogeneous harness systems without semantic erasure."
+  />
+  <LinkCard
+    title="Reference Model"
+    href="/model/"
+    description="The core operational concepts and relationships across definition, execution, and evidence."
+  />
+  <LinkCard
+    title="Governance"
+    href="/governance/"
+    description="Authority, policy, delegation, approvals, exceptions, limits, intervention, and accountability."
+  />
+  <LinkCard
+    title="Standards Landscape"
+    href="/landscape/"
+    description="How the model composes with MCP, ACP, A2A, OpenTelemetry, OpAMP, and adjacent practice."
+  />
+  <LinkCard
+    title="Scope and Terminology"
+    href="/terminology/"
+    description="The shared vocabulary and boundaries used throughout Reference Model 0.1."
+  />
+</CardGrid>
+
+## The operational layer around harnesses
+
+Harness engineering focuses on making individual agents effective. Harness Operations addresses the systems problem that appears when harnesses and their executions must be observed, coordinated, governed, secured, constrained, intervened in, and audited together.
+
+The model is deliberately **harness-centric**. Different harnesses can expose different session lifecycles, permission mechanisms, capabilities, persistence models, and execution environments. Interoperability should preserve those differences where they carry operational meaning rather than force every harness into one generic lifecycle.
+
+## Relationship to AgentOps
+
+`AgentOps` and `agent operations` are emerging umbrella terms for production practices around AI agents, but their scope and terminology are not yet standardized. Harness Operations is **adjacent to and overlapping with** that practice while addressing a more specific systems problem: operating heterogeneous harnesses and their executions coherently.
+
+## Deliberately small
+
+Reference Model 0.1 does not define a new wire protocol, a common Harness lifecycle, a centralized control-plane requirement, a registry, or a certification program. Existing standards and established operational disciplines should be composed where they already solve the problem.
+
+<CardGrid>
+  <LinkCard
+    title="Source"
+    href="https://github.com/harness-operations/specification"
+    description="Read the canonical specification repository and published v0.1 release."
+  />
+  <LinkCard
+    title="Proposals"
+    href="https://github.com/harness-operations/specification/tree/main/proposals"
+    description="Follow or propose evidence-backed changes to the reference model."
+  />
+  <LinkCard
+    title="Community"
+    href="https://github.com/harness-operations/specification/issues"
+    description="Discuss terminology, mappings, operational gaps, and future work in public issues."
+  />
+</CardGrid>
