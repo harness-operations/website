@@ -14,6 +14,7 @@ export default defineConfig({
     starlight({
       title: 'Harness Operations',
       description: 'The open discipline and reference model for operating agent harnesses at scale.',
+      customCss: ['./src/styles/custom.css'],
       social: [
         {
           icon: 'github',
