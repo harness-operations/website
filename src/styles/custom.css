@@ -1,0 +1,51 @@
+:root {
+  --sl-content-width: 54rem;
+}
+
+.hero {
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+
+.hero h1 {
+  max-width: 14ch;
+  letter-spacing: -0.035em;
+}
+
+.hero .tagline {
+  max-width: 48rem;
+  font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+  line-height: 1.4;
+}
+
+.ho-version {
+  margin-block: 0 1rem;
+  color: var(--sl-color-gray-3);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ho-intro {
+  max-width: 48rem;
+  margin-block: 0 3rem;
+  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+  line-height: 1.65;
+}
+
+/* Canonical specification files already contain their own H1. Starlight renders
+   the generated frontmatter title, so hide only the duplicate source H1 while
+   leaving the synchronized Markdown body untouched. */
+.sl-markdown-content > h1:first-child {
+  display: none;
+}
+
+@media (max-width: 50rem) {
+  .hero {
+    padding-block: 3.5rem 4.5rem;
+  }
+
+  .ho-intro {
+    margin-bottom: 2.25rem;
+  }
+}
