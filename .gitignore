@@ -2,3 +2,11 @@ node_modules/
 dist/
 .astro/
 .DS_Store
+
+# Generated from harness-operations/specification@SPEC_VERSION
+src/content/docs/overview.md
+src/content/docs/principles.md
+src/content/docs/model.md
+src/content/docs/governance.md
+src/content/docs/landscape.md
+src/content/docs/terminology.md
