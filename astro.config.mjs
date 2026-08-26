@@ -1,8 +1,15 @@
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
+import { remarkSpecLinks } from './scripts/remark-spec-links.mjs';
 
 export default defineConfig({
   site: 'https://harness-operations.com',
+  markdown: {
+    processor: unified({
+      remarkPlugins: [remarkSpecLinks],
+    }),
+  },
   integrations: [
     starlight({
       title: 'Harness Operations',
@@ -20,9 +27,9 @@ export default defineConfig({
           items: [
             { slug: 'overview' },
             { slug: 'principles' },
-            { slug: 'reference-model' },
+            { slug: 'model' },
             { slug: 'governance' },
-            { slug: 'standards-landscape' },
+            { slug: 'landscape' },
           ],
         },
         {

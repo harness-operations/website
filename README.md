@@ -13,6 +13,8 @@ npm install
 npm run dev
 ```
 
+`npm run dev` synchronizes canonical reference Markdown from the version pinned in [`SPEC_VERSION`](SPEC_VERSION) before starting Astro.
+
 Build the static production site with:
 
 ```bash
@@ -20,4 +22,6 @@ npm run build
 npm run preview
 ```
 
-The current navigation pages are bootstrap placeholders only. Website issue #3 will replace them at build time with canonical Markdown synchronized from `harness-operations/specification@v0.1`.
+Production builds fail if the pinned specification release or any required canonical document cannot be resolved. Generated reference pages are ignored by Git; substantive reference prose remains owned by the `specification` repository.
+
+To prepare a later reference-model release for the website, update `SPEC_VERSION` in a reviewable pull request and verify the resulting build.
