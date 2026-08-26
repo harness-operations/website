@@ -28,13 +28,14 @@ Production builds fail if the pinned specification release or any required canon
 
 The site deploys as a static GitHub Pages artifact from `main` using [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
-The canonical production domain is `https://harness-operations.com`, recorded both in Astro's `site` configuration and [`public/CNAME`](public/CNAME).
+The canonical production domain is `https://harness-operations.com`, recorded in Astro's `site` configuration. Because this repository uses a GitHub Actions Pages source, the custom domain itself is configured in **Settings → Pages**, not through a repository `CNAME` file.
 
 Repository setup required for the first deployment:
 
 1. Enable **Settings → Pages → Source: GitHub Actions**.
-2. Configure the apex domain DNS for GitHub Pages and optionally `www` as the recommended companion CNAME.
-3. Enable HTTPS once GitHub has issued the certificate.
+2. Set the Pages custom domain to `harness-operations.com`.
+3. Configure the apex domain DNS for GitHub Pages and optionally `www` as the recommended companion CNAME.
+4. Enable HTTPS once GitHub has issued the certificate.
 
 ## Publishing a later reference-model version
 
