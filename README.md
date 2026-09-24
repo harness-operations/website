@@ -2,7 +2,7 @@
 
 Documentation-first publication site for the Harness Operations Reference Model.
 
-Canonical reference content lives in [`harness-operations/specification`](https://github.com/harness-operations/specification). Reference Model 0.1 is published at tag [`v0.1`](https://github.com/harness-operations/specification/releases/tag/v0.1).
+Canonical reference content lives in [`harness-operations/specification`](https://github.com/harness-operations/specification). Reference Model 0.2 is published at tag [`v0.2`](https://github.com/harness-operations/specification/releases/tag/v0.2).
 
 ## Development
 
