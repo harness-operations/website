@@ -24,7 +24,7 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: 'Reference Model 0.1',
+          label: 'Reference Model 0.2',
           items: [
             { slug: 'overview' },
             { slug: 'principles' },
