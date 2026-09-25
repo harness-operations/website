@@ -1,7 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
 import { remarkSpecLinks } from './scripts/remark-spec-links.mjs';
+
+const release = JSON.parse(
+  readFileSync(new URL('./SPEC_RELEASE.json', import.meta.url), 'utf8'),
+);
+const displayVersion = release.version.replace(/^v/, '');
 
 export default defineConfig({
   site: 'https://harness-operations.com',
@@ -24,7 +30,7 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: 'Reference Model 0.2',
+          label: `Reference Model ${displayVersion}`,
           items: [
             { slug: 'overview' },
             { slug: 'principles' },
