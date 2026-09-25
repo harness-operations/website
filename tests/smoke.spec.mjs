@@ -40,7 +40,7 @@ test('search opens and accepts a query', async ({ page }) => {
 test('Applied Harness Operations landing page is reachable', async ({ page }) => {
   await page.goto('/apply/');
   await expect(page.getByRole('heading', { name: 'Apply the model', level: 1 })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Landscape matrix' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Landscape matrix', exact: true })).toBeVisible();
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -55,8 +55,8 @@ test('landscape matrix renders canonical v0.3 data and filters tested evidence',
   await expect(page.getByText('15 capabilities', { exact: false })).toBeVisible();
   await expect(page.getByText('4 directed integration observations', { exact: false })).toBeVisible();
 
-  await page.getByLabel('Role').selectOption('harness');
-  await page.getByLabel('Evidence').selectOption('live_test');
+  await page.getByLabel('Role', { exact: true }).selectOption('harness');
+  await page.getByLabel('Evidence', { exact: true }).selectOption('live_test');
   await expect(page.locator('[data-result-count]')).toHaveText('2 scoped rows shown');
 
   await expect(page.getByRole('rowheader', { name: /OpenAI Codex/ })).toBeVisible();
@@ -78,8 +78,8 @@ test('landscape matrix renders canonical v0.3 data and filters tested evidence',
 
 test('matrix capability filter preserves explicit unknown semantics', async ({ page }) => {
   await page.goto('/apply/matrix/');
-  await page.getByLabel('Capability').selectOption('credentials.mediation');
-  await page.getByLabel('Evidence').selectOption('uncertain');
+  await page.getByLabel('Capability', { exact: true }).selectOption('credentials.mediation');
+  await page.getByLabel('Evidence', { exact: true }).selectOption('uncertain');
 
   const count = page.locator('[data-result-count]');
   await expect(count).not.toHaveText('0 scoped rows shown');
