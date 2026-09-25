@@ -40,6 +40,31 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Apply the model',
+          items: [
+            { label: 'Applied Harness Operations', slug: 'apply' },
+            { label: 'Landscape Matrix', slug: 'apply/matrix' },
+            { label: 'Approved Handoff Example', slug: 'apply/example' },
+            {
+              label: 'Patterns',
+              items: [
+                { label: 'Approval at execution time', slug: 'apply/patterns/approval-valid-at-execution-time' },
+                { label: 'Stop, revoke, and recover', slug: 'apply/patterns/stop-revoke-and-recover' },
+                { label: 'Model-informed decisions', slug: 'apply/patterns/model-informed-decisions' },
+              ],
+            },
+            {
+              label: 'Mappings',
+              items: [
+                { label: 'Codex App Server 0.157.0', slug: 'apply/mappings/codex-app-server' },
+                { label: 'Claude Code CLI 2.1.282', slug: 'apply/mappings/claude-code-cli' },
+              ],
+            },
+            { label: 'Comparison Methodology', slug: 'apply/comparison-methodology' },
+            { label: 'External Validation Status', slug: 'apply/external-validation' },
+          ],
+        },
+        {
           label: 'Project',
           items: [
             {
