@@ -9,15 +9,23 @@ hero:
     - text: Read the Overview
       link: /overview/
       icon: right-arrow
-    - text: Reference Model 0.2
-      link: https://github.com/harness-operations/specification/releases/tag/v0.2
-      icon: external
-      variant: minimal
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import release from '../../../SPEC_RELEASE.json';
 
-<p className="ho-version">Reference Model 0.2 · Published September 24, 2026</p>
+export const displayVersion = release.version.replace(/^v/, '');
+export const publishedDate = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+}).format(new Date(release.published_at));
+export const releaseUrl = `https://github.com/harness-operations/specification/releases/tag/${release.version}`;
+
+<p className="ho-version">
+  Reference Model {displayVersion} · Published {publishedDate} · <a href={releaseUrl}>Release</a>
+</p>
 
 <p className="ho-intro">
   An open, harness-centric reference model for operating heterogeneous agent harnesses across lifecycles, environments, authority, governance, and evidence without flattening their native semantics.
@@ -54,7 +62,7 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
   <LinkCard
     title="Scope and Terminology"
     href="/terminology/"
-    description="The shared vocabulary and boundaries used throughout Reference Model 0.2."
+    description={`The shared vocabulary and boundaries used throughout Reference Model ${displayVersion}.`}
   />
 </CardGrid>
 
@@ -70,13 +78,23 @@ The model is deliberately **harness-centric**. Different harnesses can expose di
 
 ## Deliberately small
 
-Reference Model 0.2 does not define a new wire protocol, a common Harness lifecycle, a centralized control-plane requirement, a registry, or a certification program. Existing standards and established operational disciplines should be composed where they already solve the problem.
+<p>
+  Reference Model {displayVersion} does not define a new wire protocol, a common Harness lifecycle,
+  a centralized control-plane requirement, a registry, or a certification program. Existing
+  standards and established operational disciplines should be composed where they already solve the
+  problem.
+</p>
 
 <CardGrid>
   <LinkCard
+    title="Current release"
+    href={releaseUrl}
+    description={`Read the published Harness Operations Reference Model ${displayVersion} release.`}
+  />
+  <LinkCard
     title="Source"
     href="https://github.com/harness-operations/specification"
-    description="Read the canonical specification repository and published v0.2 release."
+    description="Read the canonical specification repository."
   />
   <LinkCard
     title="Proposals"
