@@ -1,0 +1,80 @@
+name: Prepare release promotion
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published specification tag, for example v0.3
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Resolve release metadata
+        run: node scripts/prepare-release.mjs "${{ inputs.version }}"
+
+      - name: Refresh lockfile metadata
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build and validate
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser smoke tests
+        run: npm run test:smoke
+
+      - name: Create review branch and pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          SHORT_VERSION="${VERSION#v}"
+          BRANCH="release/spec-${SHORT_VERSION}"
+
+          if git ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
+            echo "Branch ${BRANCH} already exists; refusing to overwrite it." >&2
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH}"
+          git add SPEC_RELEASE.json package.json package-lock.json
+
+          if git diff --cached --quiet; then
+            echo "No release-promotion changes to commit." >&2
+            exit 1
+          fi
+
+          git commit -m "release: publish Reference Model ${SHORT_VERSION}"
+          git push origin "${BRANCH}"
+
+          gh pr create \
+            --base main \
+            --head "${BRANCH}" \
+            --title "release: publish Reference Model ${SHORT_VERSION}" \
+            --body "Prepared from published specification release ${VERSION}. The preparation workflow verified the release tag/commit, refreshed the lockfile metadata, built the complete site, and passed desktop/mobile browser smoke tests. Review and merge this PR to deploy; this workflow does not deploy production directly."
