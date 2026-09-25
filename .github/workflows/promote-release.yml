@@ -122,6 +122,4 @@ jobs:
             --base main \
             --head "$branch" \
             --title "release: publish Reference Model ${VERSION#v}" \
-            --body "Promotes harness-operations/specification@$VERSION (\`$SPEC_COMMIT\`) through the exact-source website pipeline.
-
-Prepared automatically by the least-privilege **Promote specification release** workflow. CI remains the merge gate."
+            --body "Promotes harness-operations/specification@$VERSION (\`$SPEC_COMMIT\`) through the exact-source website pipeline. Prepared automatically by the least-privilege Promote specification release workflow. CI remains the merge gate."
