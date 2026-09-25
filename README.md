@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-`npm run dev` synchronizes canonical reference Markdown from the version pinned in [`SPEC_VERSION`](SPEC_VERSION) before starting Astro.
+`npm run dev` synchronizes canonical reference Markdown from the version pinned in [`SPEC_RELEASE.json`](SPEC_RELEASE.json) before starting Astro.
 
 Build the static production site with:
 
@@ -40,8 +40,8 @@ Repository setup required for the first deployment:
 ## Publishing a later reference-model version
 
 1. Publish the new immutable release/tag in `harness-operations/specification`.
-2. Update [`SPEC_VERSION`](SPEC_VERSION) in a website pull request.
+2. Update [`SPEC_RELEASE.json`](SPEC_RELEASE.json) with the release tag, resolved commit SHA, and publication time in a website pull request.
 3. Let CI prove that the pinned specification resolves and the complete static site builds.
 4. Merge the pull request to `main`; the Pages workflow deploys that exact version.
 
-The deployment workflow never falls back from the pinned specification version to `main`.
+The build verifies that the pinned tag resolves to the pinned commit SHA, fetches canonical content from that exact commit, and never falls back to `main`.
