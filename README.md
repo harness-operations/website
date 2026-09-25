@@ -2,7 +2,7 @@
 
 Documentation-first publication site for the Harness Operations Reference Model.
 
-Canonical reference content lives in [`harness-operations/specification`](https://github.com/harness-operations/specification). Reference Model 0.2 is published at tag [`v0.2`](https://github.com/harness-operations/specification/releases/tag/v0.2).
+Canonical reference content lives in [`harness-operations/specification`](https://github.com/harness-operations/specification). The exact published release rendered by the site is recorded in [`SPEC_RELEASE.json`](SPEC_RELEASE.json).
 
 ## Development
 
@@ -40,7 +40,7 @@ Repository setup required for the first deployment:
 ## Publishing a later reference-model version
 
 1. Publish the new immutable release/tag in `harness-operations/specification`.
-2. Update [`SPEC_RELEASE.json`](SPEC_RELEASE.json) with the release tag, resolved commit SHA, and publication time in a website pull request.
+2. Run **Promote specification release** from GitHub Actions with the new tag (for example `v0.3`). The workflow resolves the tag to its exact commit, updates release/package metadata on a dedicated branch, and opens a reviewable pull request.
 3. Let CI prove that the pinned specification resolves and the complete static site builds.
 4. Merge the pull request to `main`; the Pages workflow deploys that exact version.
 
