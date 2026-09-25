@@ -1,0 +1,127 @@
+name: Promote specification release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published specification tag to promote (for example v0.3)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate requested version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Invalid version: $VERSION" >&2
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Resolve published specification release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          release_json="$(gh api "repos/harness-operations/specification/releases/tags/$VERSION")"
+          published_at="$(jq -r '.published_at' <<<"$release_json")"
+          draft="$(jq -r '.draft' <<<"$release_json")"
+          prerelease="$(jq -r '.prerelease' <<<"$release_json")"
+
+          if [[ "$published_at" == "null" || "$draft" != "false" || "$prerelease" != "false" ]]; then
+            echo "Release must be published, non-draft, and non-prerelease" >&2
+            exit 1
+          fi
+
+          ref_json="$(gh api "repos/harness-operations/specification/git/ref/tags/$VERSION")"
+          object_type="$(jq -r '.object.type' <<<"$ref_json")"
+          object_sha="$(jq -r '.object.sha' <<<"$ref_json")"
+
+          if [[ "$object_type" == "tag" ]]; then
+            tag_json="$(gh api "repos/harness-operations/specification/git/tags/$object_sha")"
+            object_type="$(jq -r '.object.type' <<<"$tag_json")"
+            object_sha="$(jq -r '.object.sha' <<<"$tag_json")"
+          fi
+
+          if [[ "$object_type" != "commit" || ! "$object_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Tag does not resolve to a commit" >&2
+            exit 1
+          fi
+
+          jq -n \
+            --arg version "$VERSION" \
+            --arg commit "$object_sha" \
+            --arg published_at "$published_at" \
+            '{version:$version, commit:$commit, published_at:$published_at}' \
+            > SPEC_RELEASE.json
+
+          echo "commit=$object_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Update package metadata and lockfile
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          display="${VERSION#v}"
+          node -e '
+            const fs = require("fs");
+            let version = process.argv[1];
+            if ((version.match(/\./g) || []).length === 1) version += ".0";
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            pkg.version = version;
+            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");
+          ' "$display"
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Validate promoted source
+        run: |
+          npm ci --no-audit --no-fund
+          npm run validate:release
+          npm run sync:spec
+
+      - name: Create promotion pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          SPEC_COMMIT: ${{ steps.release.outputs.commit }}
+        run: |
+          branch="release/spec-$VERSION"
+          existing="$(gh pr list --head "$branch" --base main --state open --json number --jq '.[0].number // empty')"
+          if [[ -n "$existing" ]]; then
+            echo "Promotion PR already exists: #$existing"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add SPEC_RELEASE.json package.json package-lock.json
+          git commit -m "release: promote specification $VERSION"
+          git push --force-with-lease origin "$branch"
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "release: publish Reference Model ${VERSION#v}" \
+            --body "Promotes harness-operations/specification@$VERSION (\`$SPEC_COMMIT\`) through the exact-source website pipeline.
+
+Prepared automatically by the least-privilege **Promote specification release** workflow. CI remains the merge gate."
