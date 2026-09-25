@@ -3,10 +3,17 @@ dist/
 .astro/
 .DS_Store
 
-# Generated from harness-operations/specification@SPEC_VERSION
+# Generated from the exact specification commit pinned in SPEC_RELEASE.json
 src/content/docs/overview.md
 src/content/docs/principles.md
 src/content/docs/model.md
 src/content/docs/governance.md
 src/content/docs/landscape.md
 src/content/docs/terminology.md
+
+src/content/docs/apply/example.md
+src/content/docs/apply/patterns/
+src/content/docs/apply/mappings/
+src/content/docs/apply/comparison-methodology.md
+src/content/docs/apply/external-validation.md
+src/data/landscape.json

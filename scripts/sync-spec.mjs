@@ -1,9 +1,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 
 const repository = 'harness-operations/specification';
 const releaseFile = resolve('SPEC_RELEASE.json');
 const outputDirectory = resolve('src/content/docs');
+const dataDirectory = resolve('src/data');
 
 const release = JSON.parse(await readFile(releaseFile, 'utf8'));
 const { version, commit } = release;
@@ -59,22 +60,32 @@ const documents = [
   ['reference/governance.md', 'governance.md', 'Governance', 'Authority, policy, delegation, approvals, exceptions, limits, and accountability.'],
   ['reference/landscape.md', 'landscape.md', 'Standards Landscape', 'Interoperability boundaries with existing standards and adjacent disciplines.'],
   ['reference/terminology.md', 'terminology.md', 'Scope and Terminology', 'Shared scope, boundaries, and vocabulary for the reference model.'],
+  ['examples/approved-artifact-handoff/README.md', 'apply/example.md', 'Approved artifact handoff', 'Executable example for approval, enforcement, uncertainty, and evidence.'],
+  ['patterns/approval-valid-at-execution-time.md', 'apply/patterns/approval-valid-at-execution-time.md', 'Approval valid at execution time', 'Bind approval to the material action and revalidate at the enforcement boundary.'],
+  ['patterns/stop-revoke-and-recover.md', 'apply/patterns/stop-revoke-and-recover.md', 'Stop, revoke, and recover', 'Treat interruption, revocation, side effects, and uncertain outcomes as distinct operational facts.'],
+  ['patterns/model-informed-decisions.md', 'apply/patterns/model-informed-decisions.md', 'Model-informed decisions, code-enforced consequences', 'Keep model judgment, policy, authority, and enforcement distinct.'],
+  ['mappings/codex-app-server-0.157.0.md', 'apply/mappings/codex-app-server.md', 'Codex App Server 0.157.0', 'Version-scoped Harness Operations mapping for OpenAI Codex App Server.'],
+  ['mappings/claude-code-cli-2.1.282.md', 'apply/mappings/claude-code-cli.md', 'Claude Code CLI 2.1.282', 'Version-scoped Harness Operations mapping for Anthropic Claude Code CLI.'],
+  ['comparisons/methodology.md', 'apply/comparison-methodology.md', 'Comparison methodology', 'How capability, evidence, freshness, scope, and interoperability claims are classified.'],
+  ['reviews/v0.3-status.md', 'apply/external-validation.md', 'External validation status', 'What v0.3 does and does not claim about independent review and reproduction.'],
 ].map(([source, target, title, description]) => ({ source, target, title, description }));
 
-async function fetchDocument(document) {
-  const sourceUrl = `https://raw.githubusercontent.com/${repository}/${commit}/${document.source}`;
+async function fetchText(source) {
+  const sourceUrl = `https://raw.githubusercontent.com/${repository}/${commit}/${source}`;
   const response = await fetch(sourceUrl, {
     headers: { 'user-agent': 'harness-operations-website-build' },
   });
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch ${document.source} from ${version} (${commit}): ${response.status} ${response.statusText}`,
+      `Failed to fetch ${source} from ${version} (${commit}): ${response.status} ${response.statusText}`,
     );
   }
-  return { ...document, body: await response.text() };
+  return response.text();
 }
 
-const fetchedDocuments = await Promise.all(documents.map(fetchDocument));
+const fetchedDocuments = await Promise.all(
+  documents.map(async (document) => ({ ...document, body: await fetchText(document.source) })),
+);
 await mkdir(outputDirectory, { recursive: true });
 
 for (const document of fetchedDocuments) {
@@ -88,9 +99,21 @@ for (const document of fetchedDocuments) {
     '',
   ].join('\n');
 
-  await writeFile(resolve(outputDirectory, document.target), `${frontmatter}${document.body}`, 'utf8');
+  const targetPath = resolve(outputDirectory, document.target);
+  await mkdir(dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, `${frontmatter}${document.body}`, 'utf8');
 }
 
+const landscapeBody = await fetchText('comparisons/data/landscape.json');
+const landscape = JSON.parse(landscapeBody);
+if (landscape.reference_model !== version) {
+  throw new Error(
+    `Comparison dataset references ${landscape.reference_model}; website is pinned to ${version}`,
+  );
+}
+await mkdir(dataDirectory, { recursive: true });
+await writeFile(resolve(dataDirectory, 'landscape.json'), JSON.stringify(landscape, null, 2) + '\n', 'utf8');
+
 console.log(
-  `Synchronized ${fetchedDocuments.length} canonical documents from ${repository}@${version} (${commit}).`,
+  `Synchronized ${fetchedDocuments.length} canonical documents and ${landscape.observations.length} comparison observations from ${repository}@${version} (${commit}).`,
 );

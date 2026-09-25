@@ -1,0 +1,132 @@
+---
+title: From Harness Engineering to Harness Operations
+description: Why capable individual agent harnesses create a new operational systems problem when they must work under shared authority, evidence, and failure handling.
+---
+
+Harness engineering asks how to make an individual agent effective.
+
+Which tools should it have? How should context be managed? When should it plan? How does it recover from a failed tool call? How should its sandbox work?
+
+Those are important questions. But they stop being the whole problem as soon as an operator depends on more than one harness—or on one harness performing work that must survive review, approval, interruption, delegation, and audit.
+
+That is where **Harness Operations** begins.
+
+## A simple approval is already a systems problem
+
+Imagine one agent proposes a patch, another reviews it, a human approves it, and an executor applies it.
+
+The happy path sounds straightforward:
+
+~~~text
+produce → review → approve → execute
+~~~
+
+But the operational questions start immediately.
+
+What exactly did the reviewer review? If the patch changes afterward, does the old approval still apply? What target environment was approved? What if authority is revoked between approval and execution? What if the connection disappears immediately after the side effect and the client does not know whether it happened?
+
+None of those questions are primarily about making the model smarter.
+
+They are questions about **identity, authority, execution boundaries, evidence, and truthful state**.
+
+The v0.3 [approved artifact handoff](/apply/example/) turns those questions into an executable fixture. Review and approval bind to the material artifact and action. Authorization is revalidated immediately before the protected side effect. A lost connection after execution becomes an explicit uncertain outcome until it is reconciled.
+
+The example is intentionally small because the lesson is not the implementation language.
+
+The lesson is that **mutable intention must not rewrite execution truth**.
+
+## Native harness semantics matter
+
+A tempting solution is to invent one universal agent state machine.
+
+Harness Operations takes the opposite approach.
+
+Codex has native Thread, Turn, Item, approval, and sandbox semantics. Claude Code has sessions, tool requests, hooks, permission rules, subagents, and its own sandbox controls. OpenCode, Cursor, AX, Jev, and control layers such as Paseo expose still different boundaries.
+
+Those differences often carry operational meaning.
+
+A Codex turn interruption is not automatically equivalent to terminating an AX task. A Claude Code PreToolUse hook is not the same thing as a model instruction asking the agent not to run a command. A Jev typed decision is not itself an approval or enforcement boundary.
+
+The job of an operational layer is to **map those semantics without erasing them**.
+
+That is why the v0.3 [landscape matrix](/apply/matrix/) is organized by role and scope instead of presenting one giant checklist with green checkmarks.
+
+## Stop is not one state
+
+Operators need truthful failure semantics more than reassuring labels.
+
+A user pressing Stop might mean:
+
+- cancellation was requested;
+- a model turn observed the request;
+- new protected work is now blocked;
+- a subprocess terminated;
+- delegated work stopped;
+- an external API call was canceled;
+- or merely that the client stopped receiving updates.
+
+Those are different facts.
+
+The [Stop, revoke, and recover](/apply/patterns/stop-revoke-and-recover/) pattern keeps them separate. If the system cannot establish whether a side effect occurred, the correct state may be **outcome uncertain**.
+
+That is less comforting than a fabricated success/failure label, but much more operationally useful.
+
+## Structured model decisions are inputs, not authority
+
+The same distinction matters for decision models.
+
+Typed output can make a model judgment easier to validate and consume. A bounded choice, risk score, or probability is much better than asking downstream code to parse arbitrary prose.
+
+But structure does not turn the model into an enforcement mechanism.
+
+The reusable pipeline is:
+
+~~~text
+evidence
+  ↓
+model judgment
+  ↓
+structural validation
+  ↓
+policy
+  ↓
+authorized decision
+  ↓
+technical enforcement
+  ↓
+execution evidence
+~~~
+
+Who may change the threshold is a governance question. What the threshold means is a policy question. What prevents the action is an enforcement question.
+
+The [model-informed decisions pattern](/apply/patterns/model-informed-decisions/) keeps those layers explicit.
+
+## Evidence is the bridge
+
+The practical center of Harness Operations is not a control plane. It is the ability to recover operational truth across heterogeneous systems.
+
+For an important action, an operator should be able to answer:
+
+- What definition or request started this work?
+- Which native harness/session actually executed?
+- What model, environment, policy, and capability facts were resolved at runtime?
+- Which decision or approval influenced the action?
+- Which enforcement boundary actually applied?
+- What artifact or side effect resulted?
+- What remains unknown?
+
+That evidence may come from native harness history, runtime status, approval records, telemetry, artifacts, receipts, or an external control layer. The reference model intentionally does not require one storage schema.
+
+## The next test is outside the project
+
+v0.3 provides project-maintained examples, mappings, source-backed comparisons, and narrow live interface tests.
+
+It does not claim that this proves the model is universally correct.
+
+The useful next challenge is an operator bringing a failure the project did not design for.
+
+If Harness Operations helps explain what happened and which boundary failed, it is earning its vocabulary.
+
+If it gets in the way—or requires inventing facts the native systems do not actually expose—the model should change.
+
+That is the point of Applied Harness Operations: move from **a coherent description of the problem** to **evidence that the description helps operate real systems**.

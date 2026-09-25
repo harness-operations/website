@@ -1,0 +1,563 @@
+---
+import landscape from '../data/landscape.json';
+
+const roleOrder = ['harness', 'client', 'control_layer', 'execution_runtime', 'decision_service', 'other'];
+const roleLabels = {
+  harness: 'Harnesses',
+  client: 'Clients',
+  control_layer: 'Control layers',
+  execution_runtime: 'Execution runtimes',
+  decision_service: 'Decision services',
+  other: 'Other',
+};
+const findingLabels = {
+  available: 'Available',
+  partial: 'Partial / conditional',
+  unsupported: 'Unsupported in scope',
+  unknown: 'Unknown',
+  not_applicable: 'Not applicable',
+};
+const mechanismLabels = {
+  native: 'Native',
+  configured_native: 'Configured native',
+  adapter: 'Adapter',
+  external_controller: 'External controller',
+  model_mediated: 'Model-mediated',
+  not_applicable: 'Not applicable',
+};
+const evidenceLabels = {
+  primary_documentation: 'Primary docs',
+  source_code: 'Source',
+  release_note: 'Release note',
+  live_test: 'Live test',
+  fixture_test: 'Fixture test',
+  operator_report: 'Operator report',
+};
+
+const systems = new Map(landscape.systems.map((system) => [system.id, system]));
+const observationsByRow = new Map();
+
+for (const observation of landscape.observations) {
+  const scope = observation.scope;
+  const rowKey = [
+    observation.system_id,
+    scope.interface,
+    scope.version,
+    scope.deployment_mode,
+  ].join('::');
+
+  if (!observationsByRow.has(rowKey)) {
+    observationsByRow.set(rowKey, {
+      key: rowKey,
+      system: systems.get(observation.system_id),
+      scope,
+      observations: new Map(),
+    });
+  }
+  observationsByRow.get(rowKey).observations.set(observation.capability_id, observation);
+}
+
+const rows = [...observationsByRow.values()].sort((a, b) =>
+  a.system.name.localeCompare(b.system.name),
+);
+
+const sections = roleOrder
+  .map((role) => ({
+    role,
+    label: roleLabels[role],
+    rows: rows.filter((row) => row.system.roles.includes(role)),
+  }))
+  .filter((section) => section.rows.length > 0);
+
+function evidenceKinds(observation) {
+  return observation.evidence.map((item) => item.type).join(' ');
+}
+
+function evidenceSummary(observation) {
+  const types = new Set(observation.evidence.map((item) => item.type));
+  if (types.has('live_test')) return 'Live-tested + source-backed';
+  if (types.has('fixture_test')) return 'Fixture-tested';
+  return 'Source-backed';
+}
+
+function displayDate(value) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value + 'T00:00:00Z'));
+}
+---
+
+<div class="ho-matrix" data-landscape-matrix>
+  <div class="ho-matrix-intro">
+    <p>
+      <strong>{landscape.systems.length} systems</strong> ·
+      <strong>{landscape.capabilities.length} capabilities</strong> ·
+      <strong>{landscape.integrations.length} directed integration observations</strong>
+    </p>
+    <p>
+      Rows are scoped to a specific interface, version, deployment mode, and review date.
+      Unknown is not unsupported. Not applicable is not a failure.
+    </p>
+  </div>
+
+  <form class="ho-matrix-controls" aria-label="Landscape matrix filters" onsubmit="return false">
+    <label>
+      Role
+      <select data-filter-role>
+        <option value="all">All roles</option>
+        {sections.map((section) => <option value={section.role}>{section.label}</option>)}
+      </select>
+    </label>
+
+    <label>
+      Capability
+      <select data-filter-capability>
+        <option value="all">All capabilities</option>
+        {landscape.capabilities.map((capability) => (
+          <option value={capability.id}>{capability.name}</option>
+        ))}
+      </select>
+    </label>
+
+    <label>
+      Interface
+      <input data-filter-interface type="search" placeholder="Filter system or interface" />
+    </label>
+
+    <label>
+      Evidence
+      <select data-filter-evidence>
+        <option value="all">All evidence</option>
+        <option value="live_test">Has live-test evidence</option>
+        <option value="source">Has source/documentation evidence</option>
+        <option value="uncertain">Unknown or not applicable</option>
+      </select>
+    </label>
+
+    <label>
+      Freshness
+      <select data-filter-freshness>
+        <option value="all">Any review date</option>
+        <option value="30">Reviewed within 30 days</option>
+        <option value="90">Reviewed within 90 days</option>
+        <option value="stale">Older than 90 days</option>
+      </select>
+    </label>
+
+    <button type="button" data-reset-filters>Reset</button>
+  </form>
+
+  <p class="ho-matrix-count" data-result-count aria-live="polite"></p>
+
+  <div class="ho-matrix-legend" aria-label="Finding legend">
+    {Object.entries(findingLabels).map(([value, label]) => (
+      <span class={'ho-finding ho-finding--' + value}>{label}</span>
+    ))}
+  </div>
+
+  {sections.map((section) => (
+    <section class="ho-role-section" data-role-section={section.role}>
+      <h2>{section.label}</h2>
+      <p class="ho-role-note">
+        {section.role === 'harness' && 'Harness rows describe native agent-session, tool, permission, coordination, and evidence surfaces.'}
+        {section.role === 'client' && 'Client rows describe operator-facing control surfaces; underlying Harness semantics remain separate.'}
+        {section.role === 'control_layer' && 'Control-layer rows describe cross-Harness observation and control without assuming the layer owns every enforcement boundary.'}
+        {section.role === 'execution_runtime' && 'Runtime rows emphasize execution placement, isolation, lifecycle, network, credentials, and resource controls.'}
+        {section.role === 'decision_service' && 'Decision-service rows describe structured judgments; downstream policy and enforcement remain separate.'}
+      </p>
+
+      <div class="ho-matrix-scroll" tabindex="0" aria-label={section.label + ' capability matrix'}>
+        <table>
+          <thead>
+            <tr>
+              <th class="ho-system-column" scope="col">System / scope</th>
+              {landscape.capabilities.map((capability) => (
+                <th scope="col" data-capability-col={capability.id}>
+                  <span>{capability.name}</span>
+                  <small>{capability.group}</small>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {section.rows.map((row) => {
+              const searchText = [
+                row.system.name,
+                row.scope.interface,
+                row.scope.version,
+                row.scope.deployment_mode,
+              ].join(' ').toLowerCase();
+
+              return (
+                <tr
+                  data-matrix-row
+                  data-roles={row.system.roles.join(' ')}
+                  data-search={searchText}
+                >
+                  <th class="ho-system-column" scope="row">
+                    <strong>{row.system.name}</strong>
+                    <span>{row.scope.interface}</span>
+                    <span>{row.scope.version}</span>
+                    <small>{row.scope.deployment_mode}</small>
+                  </th>
+
+                  {landscape.capabilities.map((capability) => {
+                    const observation = row.observations.get(capability.id);
+                    if (!observation) return <td data-capability-cell={capability.id}>Missing</td>;
+
+                    return (
+                      <td
+                        data-capability-cell={capability.id}
+                        data-finding={observation.finding}
+                        data-evidence={evidenceKinds(observation)}
+                        data-reviewed={observation.reviewed_at}
+                      >
+                        <span class={'ho-finding ho-finding--' + observation.finding}>
+                          {findingLabels[observation.finding]}
+                        </span>
+                        <span class="ho-mechanism">{mechanismLabels[observation.mechanism]}</span>
+                        <small>{evidenceSummary(observation)} · {displayDate(observation.reviewed_at)}</small>
+
+                        <details>
+                          <summary>Evidence & scope</summary>
+                          {observation.prerequisites?.length > 0 && (
+                            <>
+                              <strong>Prerequisites</strong>
+                              <ul>
+                                {observation.prerequisites.map((item) => <li>{item}</li>)}
+                              </ul>
+                            </>
+                          )}
+                          {observation.limitations?.length > 0 && (
+                            <>
+                              <strong>Limitations</strong>
+                              <ul>
+                                {observation.limitations.map((item) => <li>{item}</li>)}
+                              </ul>
+                            </>
+                          )}
+                          <strong>Evidence</strong>
+                          <ul>
+                            {observation.evidence.map((item) => (
+                              <li>
+                                {item.url ? <a href={item.url}>{item.title}</a> : item.title}
+                                {' · '}
+                                {evidenceLabels[item.type] ?? item.type}
+                                {item.result && item.result !== 'not_tested' ? ' · ' + item.result : ''}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+
+  <section class="ho-integration-section">
+    <h2>Directed integration observations</h2>
+    <p>
+      These records answer a narrower question than the feature grid: which specific source
+      and target interfaces have evidence of a particular relationship. An adapter or shared
+      protocol does not automatically establish every lifecycle or governance behavior.
+    </p>
+
+    {landscape.integrations.length === 0 ? (
+      <p>No directed integration observations are published in this release.</p>
+    ) : (
+      <div class="ho-integration-grid">
+        {landscape.integrations.map((integration) => {
+          const source = systems.get(integration.source.system_id);
+          const target = systems.get(integration.target.system_id);
+          return (
+            <article>
+              <header>
+                <strong>{source?.name ?? integration.source.system_id}</strong>
+                <span aria-hidden="true">→</span>
+                <strong>{target?.name ?? integration.target.system_id}</strong>
+              </header>
+              <p><strong>{integration.finding === 'demonstrated' ? 'Demonstrated' : 'Partial / scoped'}</strong></p>
+              <dl>
+                <dt>Operation</dt><dd>{integration.operation}</dd>
+                <dt>Boundary</dt><dd>{integration.boundary}</dd>
+                <dt>Scope</dt>
+                <dd>
+                  {integration.source.interface} {integration.source.version} →
+                  {' '}{integration.target.interface} {integration.target.version}
+                </dd>
+                <dt>Reviewed</dt><dd>{displayDate(integration.reviewed_at)}</dd>
+              </dl>
+              {integration.limitations?.length > 0 && (
+                <>
+                  <strong>Limitations</strong>
+                  <ul>{integration.limitations.map((item) => <li>{item}</li>)}</ul>
+                </>
+              )}
+              <strong>Evidence</strong>
+              <ul>
+                {integration.evidence.map((item) => (
+                  <li>
+                    {item.url ? <a href={item.url}>{item.title}</a> : item.title}
+                    {' · '}{evidenceLabels[item.type] ?? item.type}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          );
+        })}
+      </div>
+    )}
+  </section>
+</div>
+
+<script>
+  const root = document.querySelector('[data-landscape-matrix]');
+
+  if (root) {
+    const role = root.querySelector('[data-filter-role]');
+    const capability = root.querySelector('[data-filter-capability]');
+    const interfaceInput = root.querySelector('[data-filter-interface]');
+    const evidence = root.querySelector('[data-filter-evidence]');
+    const freshness = root.querySelector('[data-filter-freshness]');
+    const reset = root.querySelector('[data-reset-filters]');
+    const count = root.querySelector('[data-result-count]');
+
+    const sourceEvidence = new Set([
+      'primary_documentation',
+      'source_code',
+      'release_note',
+      'operator_report',
+    ]);
+
+    const cellMatchesEvidence = (cell, value) => {
+      if (value === 'all') return true;
+      if (value === 'uncertain') {
+        return ['unknown', 'not_applicable'].includes(cell.dataset.finding);
+      }
+      const kinds = new Set((cell.dataset.evidence || '').split(' ').filter(Boolean));
+      if (value === 'source') return [...kinds].some((kind) => sourceEvidence.has(kind));
+      return kinds.has(value);
+    };
+
+    const cellMatchesFreshness = (cell, value) => {
+      if (value === 'all') return true;
+      const reviewed = Date.parse((cell.dataset.reviewed || '') + 'T00:00:00Z');
+      if (Number.isNaN(reviewed)) return false;
+      const ageDays = (Date.now() - reviewed) / 86400000;
+      if (value === 'stale') return ageDays > 90;
+      return ageDays <= Number(value);
+    };
+
+    const applyFilters = () => {
+      const selectedRole = role.value;
+      const selectedCapability = capability.value;
+      const query = interfaceInput.value.trim().toLowerCase();
+      const selectedEvidence = evidence.value;
+      const selectedFreshness = freshness.value;
+
+      root.querySelectorAll('[data-capability-col], [data-capability-cell]').forEach((element) => {
+        const matches =
+          selectedCapability === 'all' ||
+          element.dataset.capabilityCol === selectedCapability ||
+          element.dataset.capabilityCell === selectedCapability;
+        element.hidden = !matches;
+      });
+
+      let visibleRows = 0;
+
+      root.querySelectorAll('[data-role-section]').forEach((section) => {
+        const sectionRoleMatches =
+          selectedRole === 'all' || section.dataset.roleSection === selectedRole;
+        let sectionVisibleRows = 0;
+
+        section.querySelectorAll('[data-matrix-row]').forEach((row) => {
+          const textMatches = !query || (row.dataset.search || '').includes(query);
+          const visibleCells = [...row.querySelectorAll('[data-capability-cell]')].filter(
+            (cell) => !cell.hidden,
+          );
+          const evidenceMatches = visibleCells.some((cell) =>
+            cellMatchesEvidence(cell, selectedEvidence),
+          );
+          const freshnessMatches = visibleCells.some((cell) =>
+            cellMatchesFreshness(cell, selectedFreshness),
+          );
+
+          const show = sectionRoleMatches && textMatches && evidenceMatches && freshnessMatches;
+          row.hidden = !show;
+          if (show) {
+            visibleRows += 1;
+            sectionVisibleRows += 1;
+          }
+        });
+
+        section.hidden = !sectionRoleMatches || sectionVisibleRows === 0;
+      });
+
+      count.textContent =
+        visibleRows + ' scoped row' + (visibleRows === 1 ? '' : 's') + ' shown';
+    };
+
+    [role, capability, evidence, freshness].forEach((control) =>
+      control.addEventListener('change', applyFilters),
+    );
+    interfaceInput.addEventListener('input', applyFilters);
+    reset.addEventListener('click', () => {
+      role.value = 'all';
+      capability.value = 'all';
+      evidence.value = 'all';
+      freshness.value = 'all';
+      interfaceInput.value = '';
+      applyFilters();
+    });
+
+    applyFilters();
+  }
+</script>
+
+<style>
+  .ho-matrix { --cell-min: 12rem; }
+  .ho-matrix-intro {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: var(--sl-color-gray-7);
+  }
+  .ho-matrix-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+    margin-block: 1.5rem;
+  }
+  .ho-matrix-controls label {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .ho-matrix-controls select,
+  .ho-matrix-controls input,
+  .ho-matrix-controls button {
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 0.45rem;
+    color: var(--sl-color-text);
+    background: var(--sl-color-bg);
+    font: inherit;
+  }
+  .ho-matrix-controls button { cursor: pointer; font-weight: 700; }
+  .ho-matrix-count, .ho-role-note { color: var(--sl-color-gray-2); }
+  .ho-matrix-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-block: 1rem 2rem;
+  }
+  .ho-role-section { margin-block: 2.5rem; }
+  .ho-role-note { max-width: 56rem; }
+  .ho-matrix-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    margin-top: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.6rem;
+  }
+  .ho-matrix table {
+    width: max-content;
+    min-width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.83rem;
+  }
+  .ho-matrix th, .ho-matrix td {
+    min-width: var(--cell-min);
+    max-width: 18rem;
+    padding: 0.75rem;
+    vertical-align: top;
+    border-right: 1px solid var(--sl-color-gray-5);
+    border-bottom: 1px solid var(--sl-color-gray-5);
+  }
+  .ho-matrix tr:last-child th, .ho-matrix tr:last-child td { border-bottom: 0; }
+  .ho-system-column {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 13rem !important;
+    max-width: 15rem !important;
+    background: var(--sl-color-bg-nav);
+  }
+  thead .ho-system-column { z-index: 2; }
+  .ho-system-column span,
+  .ho-system-column small,
+  .ho-matrix thead small,
+  .ho-matrix td > small,
+  .ho-mechanism {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--sl-color-gray-2);
+  }
+  .ho-finding {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 750;
+    line-height: 1.3;
+  }
+  .ho-finding--available { color: var(--sl-color-green-high); }
+  .ho-finding--partial { color: var(--sl-color-orange-high); }
+  .ho-finding--unsupported { color: var(--sl-color-red-high); }
+  .ho-finding--unknown { color: var(--sl-color-gray-2); }
+  .ho-finding--not_applicable { color: var(--sl-color-purple-high); }
+  .ho-matrix details { margin-top: 0.6rem; }
+  .ho-matrix details summary { cursor: pointer; font-weight: 700; }
+  .ho-matrix details ul, .ho-integration-grid ul { padding-left: 1rem; }
+  .ho-integration-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem;
+  }
+  .ho-integration-grid article {
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.6rem;
+    background: var(--sl-color-gray-7);
+  }
+  .ho-integration-grid header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 1.05rem;
+  }
+  .ho-integration-grid dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.3rem 0.65rem;
+  }
+  .ho-integration-grid dt { font-weight: 700; }
+  .ho-integration-grid dd { margin: 0; }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 40rem) {
+    .ho-matrix { --cell-min: 10.5rem; }
+    .ho-matrix-controls { grid-template-columns: 1fr; }
+    .ho-system-column {
+      min-width: 10.5rem !important;
+      max-width: 11.5rem !important;
+    }
+  }
+</style>

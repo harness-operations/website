@@ -9,6 +9,10 @@ hero:
     - text: Read the Overview
       link: /overview/
       icon: right-arrow
+    - text: Apply the Model
+      link: /apply/
+      icon: right-arrow
+      variant: minimal
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
@@ -63,6 +67,28 @@ export const releaseUrl = `https://github.com/harness-operations/specification/r
     title="Scope and Terminology"
     href="/terminology/"
     description={`The shared vocabulary and boundaries used throughout Reference Model ${displayVersion}.`}
+  />
+</CardGrid>
+
+## Apply the model
+
+Reference Model ${displayVersion} adds an applied layer: executable failure tests, operational patterns, version-scoped Harness mappings, and an evidence-backed landscape matrix.
+
+<CardGrid>
+  <LinkCard
+    title="Apply the model"
+    href="/apply/"
+    description="Start with the executable handoff example, operational patterns, and versioned mappings."
+  />
+  <LinkCard
+    title="Landscape Matrix"
+    href="/apply/matrix/"
+    description="Compare operational capabilities by role, scope, evidence, freshness, and directed integration."
+  />
+  <LinkCard
+    title="From Harness Engineering to Harness Operations"
+    href="/apply/from-harness-engineering/"
+    description="Why effective individual harnesses create a new systems problem when they must share authority, evidence, and failure handling."
   />
 </CardGrid>
 

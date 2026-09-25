@@ -1,0 +1,80 @@
+---
+title: Apply the model
+description: Executable examples, operational patterns, implementation mappings, and evidence-backed comparison for Harness Operations.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Harness Operations becomes useful when it changes how an operator designs, stops, approves, explains, or recovers real agent work.
+
+**Applied Harness Operations v0.3** is the first release focused on that question:
+
+> **I operate one or more agent harnesses. What should I do differently after reading this?**
+
+## Start with a failure you can inspect
+
+<CardGrid>
+  <LinkCard
+    title="Approved artifact handoff"
+    href="/apply/example/"
+    description="A credential-free executable fixture for review, approval, pre-execution revalidation, uncertainty, reconciliation, and evidence."
+  />
+  <LinkCard
+    title="Landscape matrix"
+    href="/apply/matrix/"
+    description="Compare scoped operational capabilities and directed integrations without rankings or compatibility badges."
+  />
+</CardGrid>
+
+## Operational patterns
+
+<CardGrid>
+  <LinkCard
+    title="Approval valid at execution time"
+    href="/apply/patterns/approval-valid-at-execution-time/"
+    description="Prevent an approval for one artifact or action from silently authorizing a materially different one."
+  />
+  <LinkCard
+    title="Stop, revoke, and recover"
+    href="/apply/patterns/stop-revoke-and-recover/"
+    description="Separate cancellation requests, observed stop state, revocation, completed side effects, and uncertain outcomes."
+  />
+  <LinkCard
+    title="Model-informed decisions"
+    href="/apply/patterns/model-informed-decisions/"
+    description="Use model judgments as decision inputs while keeping policy, authority, and technical enforcement separate."
+  />
+</CardGrid>
+
+## Versioned mappings
+
+<CardGrid>
+  <LinkCard
+    title="Codex App Server 0.157.0"
+    href="/apply/mappings/codex-app-server/"
+    description="A version-scoped mapping of Codex-native thread, turn, approval, sandbox, usage, and evidence semantics."
+  />
+  <LinkCard
+    title="Claude Code CLI 2.1.282"
+    href="/apply/mappings/claude-code-cli/"
+    description="A version-scoped mapping of Claude Code sessions, hooks, permissions, subagents, sandboxing, and evidence."
+  />
+</CardGrid>
+
+## How to read the evidence
+
+The matrix deliberately separates **what documentation says** from **what this project actually tested**.
+
+A working command does not prove approval, cancellation, revocation, isolation, or recovery semantics. Likewise, two products mentioning the same protocol are not automatically marked compatible.
+
+Read the [comparison methodology](/apply/comparison-methodology/) before treating any cell as a general product claim.
+
+## External review
+
+v0.3 does **not** claim independent community validation. No qualifying external reproduction report was received before the release candidate.
+
+Read the [external validation status](/apply/external-validation/) or use the public review template in the specification repository to challenge the model with a real operational failure.
+
+## Why this exists
+
+Read [From Harness Engineering to Harness Operations](/apply/from-harness-engineering/) for the practical argument behind the Applied layer.
