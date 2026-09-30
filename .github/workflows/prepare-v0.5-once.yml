@@ -2,7 +2,7 @@ name: Prepare website v0.5 once
 on:
   push:
     branches: [release/spec-v0.5-preparation]
-    paths: [.github/workflows/prepare-v0.5-once.yml]
+    paths: [.github/workflows/prepare-v0.5-once.yml, tests/code-mode.spec.mjs, scripts/remark-spec-links.mjs]
 permissions:
   contents: write
 jobs:

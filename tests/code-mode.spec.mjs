@@ -24,7 +24,7 @@ test('Code Mode release is canonical, complete, and linked', async ({ page }) =>
   const crossReference = main.getByRole('link', { name: 'model-informed decision inputs', exact: true });
   await crossReference.click();
   await expect(page).toHaveURL(/\/apply\/patterns\/model-informed-decisions\/?$/);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Model-informed decisions');
+  await expect(page.getByRole('heading', { level: 1, name: 'Model-informed decisions, code-enforced consequences', exact: true })).toBeVisible();
 });
 
 test('Comparison methodology has canonical status and exposure guidance', async ({ page }) => {
