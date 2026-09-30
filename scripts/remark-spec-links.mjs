@@ -2,6 +2,8 @@ const appliedRoutes = new Map([
   ['../examples/approved-artifact-handoff/README.md', '/apply/example/'],
   ['../mappings/codex-app-server-0.157.0.md', '/apply/mappings/codex-app-server/'],
   ['../mappings/claude-code-cli-2.1.282.md', '/apply/mappings/claude-code-cli/'],
+  ['../reference/landscape.md', '/landscape/'],
+  ['../patterns/model-informed-decisions.md', '/apply/patterns/model-informed-decisions/'],
   ['approval-valid-at-execution-time.md', '/apply/patterns/approval-valid-at-execution-time/'],
   ['stop-revoke-and-recover.md', '/apply/patterns/stop-revoke-and-recover/'],
   ['model-informed-decisions.md', '/apply/patterns/model-informed-decisions/'],

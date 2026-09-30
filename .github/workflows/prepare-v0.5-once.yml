@@ -21,7 +21,8 @@ jobs:
       - name: Resolve the published release through the existing script
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = 3795644fa1750cfee0cbf57304c37d517741396b
+          test "$(git rev-parse origin/main)" = 3795644fa1750cfee0cbf57304c37d517741396b
+          git merge-base --is-ancestor 3795644fa1750cfee0cbf57304c37d517741396b HEAD
           node scripts/prepare-release.mjs v0.5
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
@@ -48,61 +49,20 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Build and validate the exact release
         run: npm run build
-      - name: Add temporary release-specific browser checks
-        run: |
-          cat > tests/release-v0.5-verification.spec.mjs <<'JS'
-          import { test, expect } from '@playwright/test';
-
-          test('Code Mode release is canonical, complete, and linked', async ({ page }) => {
-            await page.goto('/landscape/');
-            const main = page.locator('main');
-            await expect(main).toContainText('Harness Operations Reference Model 0.5');
-            await expect(main).not.toContainText('post-v0.4');
-            await expect(main).not.toContainText('(unreleased)');
-            const table = page.locator('table').filter({
-              has: page.getByRole('columnheader', { name: 'Implementation example', exact: true }),
-            });
-            await expect(table).toHaveCount(1);
-            await expect(table.locator('tbody tr')).toHaveCount(7);
-            for (const name of ['Codex code-mode tool adaptation', 'Pi MCP and Code Mode', 'OpenAI API programmatic tool calling']) {
-              await expect(table.getByRole('link', { name, exact: true })).toHaveCount(1);
-            }
-            await expect(main).toContainText('Source-backed harness integration, not a live compatibility test.');
-            await expect(main).toContainText('complete: false');
-            expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-            const crossReference = main.getByRole('link', { name: 'model-informed decision inputs', exact: true });
-            await crossReference.click();
-            await expect(page).toHaveURL(/\/apply\/patterns\/model-informed-decisions\/?$/);
-            await expect(page.getByRole('heading', { level: 1 })).toContainText('Model-informed decisions');
-          });
-
-          test('Comparison methodology has canonical status and exposure guidance', async ({ page }) => {
-            await page.goto('/apply/comparison-methodology/');
-            const main = page.locator('main');
-            await expect(main).toContainText('Applied Harness Operations v0.5');
-            await expect(main).not.toContainText('post-v0.4');
-            await expect(main).not.toContainText('(unreleased)');
-            await expect(main).toContainText('Exposure and reachability');
-            await expect(main).toContainText('partial-outcome case');
-            expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-            await main.getByRole('link', { name: 'Code Mode prior art', exact: true }).click();
-            await expect(page).toHaveURL(/\/landscape\/#code-mode$/);
-          });
-          JS
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run desktop and mobile smoke and release checks
         run: npm run test:smoke
-      - name: Commit verified metadata only
+      - name: Commit verified promotion and route fixes
         run: |
           set -euo pipefail
-          rm tests/release-v0.5-verification.spec.mjs .github/workflows/prepare-v0.5-once.yml
+          rm .github/workflows/prepare-v0.5-once.yml
           git add -A
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { execFileSync } from 'node:child_process';
           const changed = execFileSync('git', ['diff', '--cached', '--name-only', '3795644fa1750cfee0cbf57304c37d517741396b'], { encoding: 'utf8' }).trim().split('\n').sort();
-          assert.deepEqual(changed, ['SPEC_RELEASE.json', 'package-lock.json', 'package.json'].sort());
+          assert.deepEqual(changed, ['SPEC_RELEASE.json', 'package-lock.json', 'package.json', 'scripts/remark-spec-links.mjs', 'tests/code-mode.spec.mjs'].sort());
           JS
           git diff --cached --check
           test "$GITHUB_REF_NAME" = release/spec-v0.5-preparation
