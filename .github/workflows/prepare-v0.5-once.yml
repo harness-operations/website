@@ -57,7 +57,8 @@ jobs:
         run: |
           set -euo pipefail
           rm .github/workflows/prepare-v0.5-once.yml
-          git add -A
+          git add SPEC_RELEASE.json package.json package-lock.json scripts/remark-spec-links.mjs tests/code-mode.spec.mjs
+          git add -u .github/workflows/prepare-v0.5-once.yml
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { execFileSync } from 'node:child_process';
