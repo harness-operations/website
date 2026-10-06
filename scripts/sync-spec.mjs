@@ -102,6 +102,7 @@ const systemSources = [
   'systems/README.md',
   'systems/TEMPLATE.md',
   'systems/operating-arrangements.md',
+  'systems/coding-harnesses.md',
   ...systemsIndex.subjects.map((subject) => subject.document_path),
 ];
 const uniqueSystemSources = [...new Set(systemSources)];
