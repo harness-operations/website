@@ -1,16 +1,16 @@
 ---
 title: Harness Operations
-description: The open discipline and reference model for operating agent harnesses at scale.
+description: The canonical reference for understanding and operating agent Harnesses in real systems.
 template: splash
 hero:
   title: Harness Operations
-  tagline: Harness engineering makes agents effective. Harness Operations enables them to work at scale.
+  tagline: Understand how agent Harnesses work—on their own and together.
   actions:
-    - text: Read the Overview
-      link: /overview/
+    - text: Explore Systems
+      link: /systems/
       icon: right-arrow
-    - text: Apply the Model
-      link: /apply/
+    - text: Compare Systems
+      link: /apply/matrix/
       icon: right-arrow
       variant: minimal
 ---
@@ -28,30 +28,83 @@ export const publishedDate = new Intl.DateTimeFormat('en-US', {
 export const releaseUrl = `https://github.com/harness-operations/specification/releases/tag/${release.version}`;
 
 <p className="ho-version">
-  Reference Model {displayVersion} · Published {publishedDate} · <a href={releaseUrl}>Release</a>
+  Harness Operations {displayVersion} · Published {publishedDate} · <a href={releaseUrl}>Release</a>
 </p>
 
 <p className="ho-intro">
-  An open, harness-centric reference model for operating heterogeneous agent harnesses across lifecycles, environments, authority, governance, and evidence without flattening their native semantics.
+  An evidence-backed reference for how agent Harnesses and adjacent systems execute work,
+  expose authority and state, recover from failure, and combine without erasing their native semantics.
 </p>
 
-## Start with the reference model
+## Start with Systems
+
+<CardGrid>
+  <LinkCard
+    title="Systems"
+    href="/systems/"
+    description="Concrete Harnesses and adjacent systems described in their native terms, with evidence and explicit scope."
+  />
+  <LinkCard
+    title="Operating arrangements"
+    href="/systems/operating-arrangements/"
+    description="Standalone work, embedded specialization, coordinator–worker threads, shared-state workers, handoffs, and independent services."
+  />
+  <LinkCard
+    title="System Comparisons"
+    href="/apply/matrix/"
+    description="Scoped capability and interoperability evidence without rankings, compatibility badges, or hidden configuration merging."
+  />
+  <LinkCard
+    title="Standards and Boundaries"
+    href="/standards/"
+    description="Where MCP, ACP, A2A, Code Mode, telemetry, and adjacent standards fit—and where they do not."
+  />
+</CardGrid>
+
+## Explore operational shapes
+
+<CardGrid>
+  <LinkCard
+    title="Claude Projects"
+    href="/systems/claude-projects/"
+    description="Coordinator-driven worker threads with configurable cloud or machine execution placement."
+  />
+  <LinkCard
+    title="Computer Use"
+    href="/systems/computer-use/"
+    description="Client-executed, hosted, and desktop-control placements with different execution and authority boundaries."
+  />
+  <LinkCard
+    title="Realtime Voice"
+    href="/systems/realtime-voice/"
+    description="Continuous streaming, turn-taking, interruption, transport, and live tool execution."
+  />
+  <LinkCard
+    title="Background Execution"
+    href="/systems/background-execution/"
+    description="Long-running work that can outlive the initiating connection, with polling, cancellation, and retention semantics."
+  />
+  <LinkCard
+    title="Agent Evaluation"
+    href="/systems/agent-evaluation/"
+    description="Evaluator-controlled execution where the agent or Harness is the system under test."
+  />
+</CardGrid>
+
+## Deeper reference material
+
+The Reference Model is a **descriptive lens**, not the prerequisite for using Systems and not a universal lifecycle.
 
 <CardGrid>
   <LinkCard
     title="Overview"
     href="/overview/"
-    description="Why Harness Operations exists, where the operational problem begins, and what belongs in scope."
-  />
-  <LinkCard
-    title="Principles"
-    href="/principles/"
-    description="The design principles for operating heterogeneous harness systems without semantic erasure."
+    description="What Harness Operations is, what belongs in scope, and why concrete systems come first."
   />
   <LinkCard
     title="Reference Model"
     href="/model/"
-    description="The core operational concepts and relationships across definition, execution, and evidence."
+    description="Concepts for definition, execution, evidence, governance, authority, and operational identity."
   />
   <LinkCard
     title="Governance"
@@ -59,77 +112,31 @@ export const releaseUrl = `https://github.com/harness-operations/specification/r
     description="Authority, policy, delegation, approvals, exceptions, limits, intervention, and accountability."
   />
   <LinkCard
-    title="Standards Landscape"
-    href="/landscape/"
-    description="How the model relates to MCP, ACP, A2A, Code Mode, Agent Executor, Jev, OpenTelemetry, OpAMP, and adjacent practice."
-  />
-  <LinkCard
     title="Scope and Terminology"
     href="/terminology/"
-    description={`The shared vocabulary and boundaries used throughout Reference Model ${displayVersion}.`}
+    description="Shared vocabulary and boundaries for the descriptive reference material."
   />
 </CardGrid>
 
-## Apply the model
+## Publication boundary
 
-The Applied layer includes executable failure tests, operational patterns, version-scoped Harness mappings, and an evidence-backed landscape matrix.
-
-<CardGrid>
-  <LinkCard
-    title="Apply the model"
-    href="/apply/"
-    description="Start with the executable handoff example, operational patterns, and versioned mappings."
-  />
-  <LinkCard
-    title="Landscape Matrix"
-    href="/apply/matrix/"
-    description="Compare operational capabilities by role, scope, evidence, freshness, and directed integration."
-  />
-  <LinkCard
-    title="From Harness Engineering to Harness Operations"
-    href="/apply/from-harness-engineering/"
-    description="Why effective individual harnesses create a new systems problem when they must share authority, evidence, and failure handling."
-  />
-</CardGrid>
-
-## The operational layer around harnesses
-
-Harness engineering focuses on making individual agents effective. Harness Operations addresses the systems problem that appears when harnesses and their executions must be observed, coordinated, governed, secured, constrained, intervened in, and audited together.
-
-The model is deliberately **harness-centric**. Different harnesses can expose different session lifecycles, permission mechanisms, capabilities, persistence models, and execution environments. Interoperability should preserve those differences where they carry operational meaning rather than force every harness into one generic lifecycle.
-
-## Relationship to AgentOps
-
-`AgentOps` and `agent operations` are emerging umbrella terms for production practices around AI agents, but their scope and terminology are not yet standardized. Harness Operations is **adjacent to and overlapping with** that practice while addressing a more specific systems problem: operating heterogeneous harnesses and their executions coherently.
-
-## Deliberately small
-
-<p>
-  Reference Model {displayVersion} does not define a new wire protocol, a common Harness lifecycle,
-  a centralized control-plane requirement, a registry, or a certification program. Existing
-  standards and established operational disciplines should be composed where they already solve the
-  problem.
-</p>
+The website renders canonical content from the immutable specification release shown above. Product versions,
+review dates, and evidence scopes remain attached to the concrete observations they describe.
 
 <CardGrid>
   <LinkCard
     title="Current release"
     href={releaseUrl}
-    description={`Read the published Harness Operations Reference Model ${displayVersion} release.`}
+    description={`Read the published Harness Operations ${displayVersion} release notes.`}
   />
   <LinkCard
-    title="Source"
+    title="Canonical source"
     href="https://github.com/harness-operations/specification"
-    description="Read the canonical specification repository."
-  />
-  <LinkCard
-    title="Proposals"
-    href="https://github.com/harness-operations/specification/tree/main/proposals"
-    description="Follow or propose evidence-backed changes to the reference model."
+    description="Read or contribute to the specification repository."
   />
   <LinkCard
     title="Community"
     href="https://github.com/harness-operations/specification/issues"
-    description="Discuss terminology, mappings, operational gaps, and future work in public issues."
+    description="Discuss evidence, operational gaps, corrections, and future coverage."
   />
 </CardGrid>
