@@ -100,6 +100,7 @@ const systemsIndexBody = await fetchText('systems/index.json');
 const systemsIndex = JSON.parse(systemsIndexBody);
 const systemSources = [
   'systems/README.md',
+  'systems/TEMPLATE.md',
   'systems/operating-arrangements.md',
   ...systemsIndex.subjects.map((subject) => subject.document_path),
 ];
@@ -122,14 +123,21 @@ const staticDocuments = [
 
 const systemDocuments = uniqueSystemSources.map((source) => ({
   source,
-  target: source === 'systems/README.md' ? 'systems/index.md' : source,
+  target:
+    source === 'systems/README.md'
+      ? 'systems/index.md'
+      : source === 'systems/TEMPLATE.md'
+        ? 'systems/template.md'
+        : source,
   title: null,
   description:
     source === 'systems/README.md'
       ? 'Canonical concrete reference for Harnesses and adjacent systems.'
-      : source === 'systems/operating-arrangements.md'
-        ? 'Recurring ways Harnesses and adjacent systems operate independently and together.'
-        : 'Evidence-backed Systems reference entry from the canonical specification.',
+      : source === 'systems/TEMPLATE.md'
+        ? 'Authoring contract for evidence-backed Systems reference entries.'
+        : source === 'systems/operating-arrangements.md'
+          ? 'Recurring ways Harnesses and adjacent systems operate independently and together.'
+          : 'Evidence-backed Systems reference entry from the canonical specification.',
 }));
 
 const documents = [...staticDocuments, ...systemDocuments];
