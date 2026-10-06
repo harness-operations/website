@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const repository = 'harness-operations/specification';
@@ -51,10 +51,4 @@ const metadata = {
 };
 await writeFile(resolve('SPEC_RELEASE.json'), JSON.stringify(metadata, null, 2) + '\n');
 
-const pkgPath = resolve('package.json');
-const pkg = JSON.parse(await readFile(pkgPath, 'utf8'));
-const parts = version.slice(1).split('.');
-pkg.version = parts.length === 2 ? `${version.slice(1)}.0` : version.slice(1);
-await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-
-console.log(`Prepared website metadata for ${version} @ ${commit}`);
+console.log(`Prepared website release pin for ${version} @ ${commit}`);
