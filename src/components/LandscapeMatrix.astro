@@ -407,14 +407,13 @@ function displayDate(value) {
           const visibleCells = [...row.querySelectorAll('[data-capability-cell]')].filter(
             (cell) => !cell.hidden,
           );
-          const evidenceMatches = visibleCells.some((cell) =>
-            cellMatchesEvidence(cell, selectedEvidence),
-          );
-          const freshnessMatches = visibleCells.some((cell) =>
-            cellMatchesFreshness(cell, selectedFreshness),
+          const cellFiltersMatch = visibleCells.some(
+            (cell) =>
+              cellMatchesEvidence(cell, selectedEvidence) &&
+              cellMatchesFreshness(cell, selectedFreshness),
           );
 
-          const show = sectionRoleMatches && textMatches && evidenceMatches && freshnessMatches;
+          const show = sectionRoleMatches && textMatches && cellFiltersMatch;
           row.hidden = !show;
           if (show) {
             visibleRows += 1;
