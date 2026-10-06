@@ -27,7 +27,7 @@ test('Systems navigation and canonical entries are reachable', async ({ page }) 
 
 test('Standards and Boundaries uses the canonical route', async ({ page }) => {
   await page.goto('/standards/');
-  await expect(page.getByRole('heading', { name: 'Standards and Interoperability Boundaries', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Standards and Boundaries', level: 1 })).toBeVisible();
 });
 
 test('search opens and accepts a query', async ({ page }) => {
