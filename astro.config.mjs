@@ -1,13 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
 import { remarkSpecLinks } from './scripts/remark-spec-links.mjs';
-
-const release = JSON.parse(
-  readFileSync(new URL('./SPEC_RELEASE.json', import.meta.url), 'utf8'),
-);
-const displayVersion = release.version.replace(/^v/, '');
 
 export default defineConfig({
   site: 'https://harness-operations.com',
@@ -19,7 +13,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Harness Operations',
-      description: 'The open discipline and reference model for operating agent harnesses at scale.',
+      description: 'The canonical reference for operating agent Harnesses in real systems.',
       customCss: ['./src/styles/custom.css'],
       social: [
         {
@@ -30,43 +24,80 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: `Reference Model ${displayVersion}`,
+          label: 'Systems',
           items: [
-            { slug: 'overview' },
-            { slug: 'principles' },
-            { slug: 'model' },
-            { slug: 'governance' },
-            { slug: 'landscape' },
+            { label: 'Systems overview', slug: 'systems' },
+            { label: 'Operating arrangements', slug: 'systems/operating-arrangements' },
+            {
+              label: 'Coding & orchestration',
+              items: [
+                { label: 'OpenAI Codex', slug: 'systems/openai-codex' },
+                { label: 'Anthropic Claude Code', slug: 'systems/anthropic-claude-code' },
+                { label: 'Claude Projects (beta)', slug: 'systems/claude-projects' },
+                { label: 'Coding comparison', slug: 'systems/coding-harnesses' },
+              ],
+            },
+            {
+              label: 'Security & testing',
+              items: [
+                { label: 'Antares models', slug: 'systems/antares-models' },
+                { label: 'Antares CLI', slug: 'systems/antares-cli' },
+                { label: 'Cisco Foundry Security Spec', slug: 'systems/cisco-foundry-security-spec' },
+                { label: 'Playwright Test Agents', slug: 'systems/playwright-test-agents' },
+              ],
+            },
+            {
+              label: 'Execution surfaces',
+              items: [
+                { label: 'Browser Use', slug: 'systems/browser-use' },
+                { label: 'Computer Use', slug: 'systems/computer-use' },
+                { label: 'Realtime Voice', slug: 'systems/realtime-voice' },
+                { label: 'Background Execution', slug: 'systems/background-execution' },
+              ],
+            },
+            {
+              label: 'Applications & evaluation',
+              items: [
+                { label: 'FireRed-OpenStoryline', slug: 'systems/firered-openstoryline' },
+                { label: 'Agent Evaluation', slug: 'systems/agent-evaluation' },
+              ],
+            },
           ],
         },
         {
-          label: 'Apply the model',
+          label: 'Compare & validate',
           items: [
-            { label: 'Applied Harness Operations', slug: 'apply' },
-            { label: 'Landscape Matrix', slug: 'apply/matrix' },
-            { label: 'Approved Handoff Example', slug: 'apply/example' },
+            { label: 'System Comparisons', slug: 'apply/matrix' },
+            { label: 'Comparison methodology', slug: 'apply/comparison-methodology' },
+            { label: 'Approved handoff example', slug: 'apply/example' },
             {
-              label: 'Patterns',
+              label: 'Operational patterns',
               items: [
                 { label: 'Approval at execution time', slug: 'apply/patterns/approval-valid-at-execution-time' },
                 { label: 'Stop, revoke, and recover', slug: 'apply/patterns/stop-revoke-and-recover' },
                 { label: 'Model-informed decisions', slug: 'apply/patterns/model-informed-decisions' },
               ],
             },
-            {
-              label: 'Mappings',
-              items: [
-                { label: 'Codex App Server 0.157.0', slug: 'apply/mappings/codex-app-server' },
-                { label: 'Claude Code CLI 2.1.282', slug: 'apply/mappings/claude-code-cli' },
-              ],
-            },
-            { label: 'Comparison Methodology', slug: 'apply/comparison-methodology' },
-            { label: 'External Validation Status', slug: 'apply/external-validation' },
+          ],
+        },
+        {
+          label: 'Reference Model',
+          items: [
+            { slug: 'overview' },
+            { slug: 'principles' },
+            { slug: 'model' },
+            { slug: 'governance' },
+            { label: 'Standards and Boundaries', slug: 'standards' },
+            { slug: 'terminology' },
           ],
         },
         {
           label: 'Project',
           items: [
+            {
+              label: 'Releases',
+              link: 'https://github.com/harness-operations/specification/releases',
+            },
             {
               label: 'Proposals',
               link: 'https://github.com/harness-operations/specification/tree/main/proposals',
