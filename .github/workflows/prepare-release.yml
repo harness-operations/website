@@ -31,8 +31,6 @@ jobs:
       - name: Resolve release metadata
         run: node scripts/prepare-release.mjs "${{ inputs.version }}"
 
-      - name: Refresh lockfile metadata
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
@@ -63,18 +61,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "${BRANCH}"
-          git add SPEC_RELEASE.json package.json package-lock.json
+          git add SPEC_RELEASE.json
 
           if git diff --cached --quiet; then
             echo "No release-promotion changes to commit." >&2
             exit 1
           fi
 
-          git commit -m "release: publish Reference Model ${SHORT_VERSION}"
+          git commit -m "release: promote specification ${VERSION}"
           git push origin "${BRANCH}"
 
           gh pr create \
             --base main \
             --head "${BRANCH}" \
-            --title "release: publish Reference Model ${SHORT_VERSION}" \
-            --body "Prepared from published specification release ${VERSION}. The preparation workflow verified the release tag/commit, refreshed the lockfile metadata, built the complete site, and passed desktop/mobile browser smoke tests. Review and merge this PR to deploy; this workflow does not deploy production directly."
+            --title "release: promote specification ${VERSION}" \
+            --body "Prepared from published specification release ${VERSION}. The preparation workflow verified the exact release tag/commit, built the complete site, and passed browser smoke tests. Review and merge this PR to deploy; this workflow does not deploy production directly."
