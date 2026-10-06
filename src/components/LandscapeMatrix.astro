@@ -1,5 +1,5 @@
 ---
-import landscape from '../data/landscape.json';
+import landscape from '../data/systems.json';
 
 const roleOrder = ['harness', 'client', 'control_layer', 'execution_runtime', 'decision_service', 'other'];
 const roleLabels = {
@@ -17,6 +17,13 @@ const findingLabels = {
   unknown: 'Unknown',
   not_applicable: 'Not applicable',
 };
+const integrationFindingLabels = {
+  demonstrated: 'Demonstrated',
+  partial: 'Partial / scoped',
+  failed: 'Failed',
+  unknown: 'Unknown',
+  not_applicable: 'Not applicable',
+};
 const mechanismLabels = {
   native: 'Native',
   configured_native: 'Configured native',
@@ -30,7 +37,7 @@ const evidenceLabels = {
   source_code: 'Source',
   release_note: 'Release note',
   live_test: 'Live test',
-  fixture_test: 'Fixture test',
+  synthetic_test: 'Synthetic test',
   operator_report: 'Operator report',
 };
 
@@ -44,6 +51,9 @@ for (const observation of landscape.observations) {
     scope.interface,
     scope.version,
     scope.deployment_mode,
+    scope.platform ?? '',
+    scope.plan ?? '',
+    scope.configuration ?? '',
   ].join('::');
 
   if (!observationsByRow.has(rowKey)) {
@@ -74,10 +84,12 @@ function evidenceKinds(observation) {
 }
 
 function evidenceSummary(observation) {
-  const types = new Set(observation.evidence.map((item) => item.type));
-  if (types.has('live_test')) return 'Live-tested + source-backed';
-  if (types.has('fixture_test')) return 'Fixture-tested';
-  return 'Source-backed';
+  const summaries = observation.evidence.map((item) => {
+    const label = evidenceLabels[item.type] ?? item.type;
+    if (item.result && item.result !== 'not_tested') return `${label} (${item.result})`;
+    return label;
+  });
+  return [...new Set(summaries)].join(' + ');
 }
 
 function displayDate(value) {
@@ -98,12 +110,12 @@ function displayDate(value) {
       <strong>{landscape.integrations.length} directed integration observations</strong>
     </p>
     <p>
-      Rows are scoped to a specific interface, version, deployment mode, and review date.
+      Rows are scoped to a specific interface, version, deployment mode, material platform/plan/configuration when present, and review date.
       Unknown is not unsupported. Not applicable is not a failure.
     </p>
   </div>
 
-  <form class="ho-matrix-controls" aria-label="Landscape matrix filters" onsubmit="return false">
+  <form class="ho-matrix-controls" aria-label="System comparison filters" onsubmit="return false">
     <label>
       Role
       <select data-filter-role>
@@ -133,7 +145,8 @@ function displayDate(value) {
         <option value="all">All evidence</option>
         <option value="live_test">Has live-test evidence</option>
         <option value="source">Has source/documentation evidence</option>
-        <option value="uncertain">Unknown or not applicable</option>
+        <option value="unknown">Unknown finding</option>
+        <option value="not_applicable">Not applicable</option>
       </select>
     </label>
 
@@ -189,7 +202,10 @@ function displayDate(value) {
                 row.scope.interface,
                 row.scope.version,
                 row.scope.deployment_mode,
-              ].join(' ').toLowerCase();
+                row.scope.platform,
+                row.scope.plan,
+                row.scope.configuration,
+              ].filter(Boolean).join(' ').toLowerCase();
 
               return (
                 <tr
@@ -202,6 +218,9 @@ function displayDate(value) {
                     <span>{row.scope.interface}</span>
                     <span>{row.scope.version}</span>
                     <small>{row.scope.deployment_mode}</small>
+                    {row.scope.platform && <small>Platform: {row.scope.platform}</small>}
+                    {row.scope.plan && <small>Plan: {row.scope.plan}</small>}
+                    {row.scope.configuration && <small>Config: {row.scope.configuration}</small>}
                   </th>
 
                   {landscape.capabilities.map((capability) => {
@@ -285,7 +304,11 @@ function displayDate(value) {
                 <span aria-hidden="true">→</span>
                 <strong>{target?.name ?? integration.target.system_id}</strong>
               </header>
-              <p><strong>{integration.finding === 'demonstrated' ? 'Demonstrated' : 'Partial / scoped'}</strong></p>
+              <p>
+                <span class={'ho-finding ho-finding--' + integration.finding}>
+                  {integrationFindingLabels[integration.finding] ?? integration.finding}
+                </span>
+              </p>
               <dl>
                 <dt>Operation</dt><dd>{integration.operation}</dd>
                 <dt>Boundary</dt><dd>{integration.boundary}</dd>
@@ -340,8 +363,8 @@ function displayDate(value) {
 
     const cellMatchesEvidence = (cell, value) => {
       if (value === 'all') return true;
-      if (value === 'uncertain') {
-        return ['unknown', 'not_applicable'].includes(cell.dataset.finding);
+      if (value === 'unknown' || value === 'not_applicable') {
+        return cell.dataset.finding === value;
       }
       const kinds = new Set((cell.dataset.evidence || '').split(' ').filter(Boolean));
       if (value === 'source') return [...kinds].some((kind) => sourceEvidence.has(kind));
@@ -384,14 +407,13 @@ function displayDate(value) {
           const visibleCells = [...row.querySelectorAll('[data-capability-cell]')].filter(
             (cell) => !cell.hidden,
           );
-          const evidenceMatches = visibleCells.some((cell) =>
-            cellMatchesEvidence(cell, selectedEvidence),
-          );
-          const freshnessMatches = visibleCells.some((cell) =>
-            cellMatchesFreshness(cell, selectedFreshness),
+          const cellFiltersMatch = visibleCells.some(
+            (cell) =>
+              cellMatchesEvidence(cell, selectedEvidence) &&
+              cellMatchesFreshness(cell, selectedFreshness),
           );
 
-          const show = sectionRoleMatches && textMatches && evidenceMatches && freshnessMatches;
+          const show = sectionRoleMatches && textMatches && cellFiltersMatch;
           row.hidden = !show;
           if (show) {
             visibleRows += 1;
@@ -517,9 +539,11 @@ function displayDate(value) {
     font-weight: 750;
     line-height: 1.3;
   }
-  .ho-finding--available { color: var(--sl-color-green-high); }
+  .ho-finding--available,
+  .ho-finding--demonstrated { color: var(--sl-color-green-high); }
   .ho-finding--partial { color: var(--sl-color-orange-high); }
-  .ho-finding--unsupported { color: var(--sl-color-red-high); }
+  .ho-finding--unsupported,
+  .ho-finding--failed { color: var(--sl-color-red-high); }
   .ho-finding--unknown { color: var(--sl-color-gray-2); }
   .ho-finding--not_applicable { color: var(--sl-color-purple-high); }
   .ho-matrix details { margin-top: 0.6rem; }

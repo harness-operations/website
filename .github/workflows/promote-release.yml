@@ -77,20 +77,6 @@ jobs:
 
           echo "commit=$object_sha" >> "$GITHUB_OUTPUT"
 
-      - name: Update package metadata and lockfile
-        env:
-          VERSION: ${{ inputs.version }}
-        run: |
-          display="${VERSION#v}"
-          node -e '
-            const fs = require("fs");
-            let version = process.argv[1];
-            if ((version.match(/\./g) || []).length === 1) version += ".0";
-            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-            pkg.version = version;
-            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");
-          ' "$display"
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       - name: Validate promoted source
         run: |
@@ -114,12 +100,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"
-          git add SPEC_RELEASE.json package.json package-lock.json
+          git add SPEC_RELEASE.json
           git commit -m "release: promote specification $VERSION"
           git push --force-with-lease origin "$branch"
 
           gh pr create \
             --base main \
             --head "$branch" \
-            --title "release: publish Reference Model ${VERSION#v}" \
+            --title "release: promote specification ${VERSION}" \
             --body "Promotes harness-operations/specification@$VERSION (\`$SPEC_COMMIT\`) through the exact-source website pipeline. Prepared automatically by the least-privilege Promote specification release workflow. CI remains the merge gate."

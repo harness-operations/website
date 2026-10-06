@@ -1,8 +1,8 @@
 # Harness Operations Website
 
-Documentation-first publication site for the Harness Operations Reference Model.
+Documentation-first publication site for Harness Operations.
 
-Canonical reference content lives in [`harness-operations/specification`](https://github.com/harness-operations/specification). The exact published release rendered by the site is recorded in [`SPEC_RELEASE.json`](SPEC_RELEASE.json).
+Canonical reference content lives in [`harness-operations/specification`](https://github.com/harness-operations/specification). The exact immutable specification release rendered by the site is recorded in [`SPEC_RELEASE.json`](SPEC_RELEASE.json).
 
 ## Development
 
@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-`npm run dev` synchronizes canonical reference Markdown from the version pinned in [`SPEC_RELEASE.json`](SPEC_RELEASE.json) before starting Astro.
+`npm run dev` validates the release pin and synchronizes canonical Markdown/data from the exact specification commit before starting Astro.
 
 Build the static production site with:
 
@@ -22,26 +22,19 @@ npm run build
 npm run preview
 ```
 
-Production builds fail if the pinned specification release or any required canonical document cannot be resolved. Generated reference pages are ignored by Git; substantive reference prose remains owned by the `specification` repository.
+Production builds fail if the pinned tag does not resolve to the pinned commit or if required canonical content cannot be fetched. Generated reference pages/data are ignored by Git; substantive reference prose and evidence remain owned by the `specification` repository.
 
 ## Deployment
 
 The site deploys as a static GitHub Pages artifact from `main` using [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
-The canonical production domain is `https://harness-operations.com`, recorded in Astro's `site` configuration. Because this repository uses a GitHub Actions Pages source, the custom domain itself is configured in **Settings → Pages**, not through a repository `CNAME` file.
+The canonical production domain is `https://harness-operations.com`.
 
-Repository setup required for the first deployment:
+## Publishing a specification release
 
-1. Enable **Settings → Pages → Source: GitHub Actions**.
-2. Set the Pages custom domain to `harness-operations.com`.
-3. Configure the apex domain DNS for GitHub Pages and optionally `www` as the recommended companion CNAME.
-4. Enable HTTPS once GitHub has issued the certificate.
+1. Publish the immutable tag/GitHub release in `harness-operations/specification`.
+2. Promote that exact tag into `SPEC_RELEASE.json` on a review branch.
+3. Let CI validate the pinned release, synchronize the canonical content/data, build the site, and run browser smoke tests.
+4. Merge the promotion PR to `main`; the Pages workflow deploys that exact release.
 
-## Publishing a later reference-model version
-
-1. Publish the new immutable release/tag in `harness-operations/specification`.
-2. Run **Promote specification release** from GitHub Actions with the new tag (for example `v0.3`). The workflow resolves the tag to its exact commit, updates release/package metadata on a dedicated branch, and opens a reviewable pull request.
-3. Let CI prove that the pinned specification resolves and the complete static site builds.
-4. Merge the pull request to `main`; the Pages workflow deploys that exact version.
-
-The build verifies that the pinned tag resolves to the pinned commit SHA, fetches canonical content from that exact commit, and never falls back to `main`.
+The website package version is independent from the specification release version. The release pin—not `package.json`—is the publication identity.
