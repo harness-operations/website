@@ -5,6 +5,11 @@ import { remarkSpecLinks } from './scripts/remark-spec-links.mjs';
 
 export default defineConfig({
   site: 'https://harness-operations.com',
+  redirects: {
+    '/landscape': '/standards/',
+    '/apply/mappings/codex-app-server': '/systems/openai-codex/',
+    '/apply/mappings/claude-code-cli': '/systems/anthropic-claude-code/',
+  },
   markdown: {
     processor: unified({
       remarkPlugins: [remarkSpecLinks],
@@ -28,6 +33,7 @@ export default defineConfig({
           items: [
             { label: 'Systems overview', slug: 'systems' },
             { label: 'Operating arrangements', slug: 'systems/operating-arrangements' },
+            { label: 'Authoring template', slug: 'systems/template' },
             {
               label: 'Coding & orchestration',
               items: [
