@@ -45,7 +45,7 @@ test('search opens and accepts a query', async ({ page }) => {
 test('comparison landing page is reachable', async ({ page }) => {
   await page.goto('/apply/');
   await expect(page.getByRole('heading', { name: 'Compare and validate', level: 1 })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'System Comparisons', exact: true })).toBeVisible();
+  await expect(page.getByRole('main').getByRole('link', { name: 'System Comparisons', exact: true })).toBeVisible();
 });
 
 test('System Comparisons renders canonical data and filters live evidence', async ({ page }) => {
