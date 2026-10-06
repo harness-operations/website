@@ -14,6 +14,7 @@ const systemFiles = new Set([
   'playwright-test-agents.md',
   'realtime-voice.md',
   'agent-evaluation.md',
+  'TEMPLATE.md',
 ]);
 
 const routeMap = new Map([
@@ -31,7 +32,7 @@ const routeMap = new Map([
 ]);
 
 for (const file of systemFiles) {
-  const slug = file.replace(/\.md$/, '');
+  const slug = file === 'TEMPLATE.md' ? 'template' : file.replace(/\.md$/, '');
   routeMap.set(file, `/systems/${slug}/`);
   routeMap.set(`../systems/${file}`, `/systems/${slug}/`);
 }
