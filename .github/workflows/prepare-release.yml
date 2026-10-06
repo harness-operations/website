@@ -50,8 +50,7 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          SHORT_VERSION="${VERSION#v}"
-          BRANCH="release/spec-${SHORT_VERSION}"
+          BRANCH="release/spec-${VERSION}"
 
           if git ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
             echo "Branch ${BRANCH} already exists; refusing to overwrite it." >&2
