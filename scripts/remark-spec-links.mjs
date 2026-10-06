@@ -19,6 +19,8 @@ const systemFiles = new Set([
 
 const routeMap = new Map([
   ['../examples/approved-artifact-handoff/README.md', '/apply/example/'],
+  ['../mappings/codex-app-server-0.157.0.md', '/systems/openai-codex/'],
+  ['../mappings/claude-code-cli-2.1.282.md', '/systems/anthropic-claude-code/'],
   ['../reference/standards.md', '/standards/'],
   ['../comparisons/methodology.md', '/apply/comparison-methodology/'],
   ['../comparisons/data/systems.json', '/data/systems.json'],
